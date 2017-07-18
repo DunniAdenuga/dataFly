@@ -37,10 +37,6 @@ public class PrivateTable {
         for(int i = 0; i< noOfRows; i++){
             tableRows.add(new TableRow());
         }
-        /*for(int i = 0; i< noOfColumns; i++){
-            tableColumn.add(new TableColumn());
-        }*/
-        
     }
      
      public TableRow getTopRow(){
@@ -113,7 +109,7 @@ public class PrivateTable {
          quasiIden.addData(data);
      }
      
-     //make a copy metthod at some point
+     //make a copy method at some point
      public PrivateTable copy(){
          PrivateTable newTable = new PrivateTable();
          newTable.noOfColumns = noOfColumns;

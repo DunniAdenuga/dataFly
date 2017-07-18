@@ -1,10 +1,3 @@
-/*
-procedure DFS(G,v):
-2      label v as discovered
-3      for all edges from v to w in G.adjacentEdges(v) do
-4          if vertex w is not labeled as discovered then
-5              recursively call DFS(G,w)
-*/
 package datafly;
 
 import java.io.File;
@@ -16,7 +9,7 @@ import java.util.Scanner;
 
 /**
  *
- * @author adenugad
+ * @author Dunni
  */
 public class DGHTree 
 {
@@ -30,13 +23,11 @@ public class DGHTree
     public DGHTree(){
         
     }
+    
     public DGHTree(DGHNode root){
         this.root = root;
-        height++;
     }
-//    public DGHTree(String rootData){
-//        this.root = new DGHNode(rootData);
-//    }
+
     public DGHTree(String file) throws FileNotFoundException{
         readIn(file);
     }
@@ -56,6 +47,7 @@ public class DGHTree
     public String getLabel(){
         return label;
     }
+    
     /**
      * Read in the hierarchy into the tree
      * @param infile 
@@ -95,14 +87,12 @@ public class DGHTree
         }
     scan.close();    
     }
-    /*
-    procedure DFS(G,v):
-    2      label v as discovered
-    3      for all edges from v to w in G.adjacentEdges(v) do
-    4          if vertex w is not labeled as discovered then
-    5              recursively call DFS(G,w)
-    */
     
+    /**
+     * Search a DGH tree for data from the root 
+     * @param treeRoot
+     * @param data 
+     */
     public void search(DGHNode treeRoot, String data){
         
         for(int i = 0; i < treeRoot.children.size(); i++){
@@ -117,6 +107,11 @@ public class DGHTree
         
     }
     
+    /**
+     * Search a DGHTree to see the parent/generalized value of data
+     * @param data
+     * @return 
+     */
     public String getGeneralization(String data){
         search(root, data);
         if(data.equalsIgnoreCase(root.getData())){
@@ -127,6 +122,11 @@ public class DGHTree
         return current.parent.getData();
     }
     
+    /**
+     * Print a tree from the root
+     * @param roots
+     * @param j - root level 
+     */
     public void printTree(DGHNode roots, int j){
         System.out.print(roots.data + " " + j + "," + " level - " +roots.level + " :");
         j++;
@@ -136,6 +136,11 @@ public class DGHTree
         //System.out.println();
     }
     
+    /**
+     * Set the node levels in a tree
+     * @param roots
+     * @param j 
+     */
     public void setDGHNodeLevels(DGHNode roots, int j){
         roots.setLevel(j);
         j--;
@@ -145,35 +150,43 @@ public class DGHTree
     }
     
     /**
-     * call a method that makes sure the length of each value in values is the same
-     * @param values
-     * @return 
-     */
-    
-    /**
      * Height of Tree
      * @return 
      */
     public int getHeight(){    
         return height;
     }
+    
+    /**
+     * Counts from root to leaf and sets value to height
+     */
     public void setHeight(){
-        DGHNode node = root;
+        if(root.isNull() == false){
+            height = 1;
+        }
+        DGHNode node = root;    
         while(node.isLeaf() == false){
             height++;
             int max = node.children.get(0).getChildCount();
             node = node.children.get(0);
-            for(int i = 0; i < node.children.size(); i++){
+            for(int i = 1; i < node.children.size(); i++){
                 if(node.children.get(i).getChildCount() > max){
                     max = node.children.get(i).getChildCount();
                     node = node.children.get(i);
+                    
                 }
             }
             
         }
     }
     
-    
+    /**
+     * Creates a DGH Tree for numeric data
+     * E.g from 1234 -> 123* -> 12** -> 1*** -> ****
+     * @param values - list of ungeneralized raw string values
+     * @return
+     * @throws FileNotFoundException 
+     */
     public DGHTree createDGHTree(ArrayList<String> values) throws FileNotFoundException{
         /*I will call a method that makes sure the length of each value in values is the same */
         //ArrayList<String> newValues = rectifyValueLength(values);
@@ -192,7 +205,7 @@ public class DGHTree
             }*/
             String dghFile = "/Users/adenugad/NetBeansProjects/kAnonAlgorithms/src/datafly/createdDGHTree.txt";
             File infile = new File(dghFile);
-        PrintWriter writer = new PrintWriter(infile); 
+            PrintWriter writer = new PrintWriter(infile); 
             for(int i = 0; i < valueNodes.size(); i++){
                 DGHNode test = valueNodes.get(i);
                 while(test != null){
@@ -244,10 +257,13 @@ public class DGHTree
        scanner.close();
        return tree;  
     }
+    
     /**
-     * Date must be in format (YYYY-MM-DD)
+     * Dates must be in format (YYYY-MM-DD)
+     * Creates a DGH Tree for list of dates
+     * E.g from YYYY-MM-DD -> YYYY-MM -> YYYY - > ****
      * @param dates - dates to be generalized
-     * @return Generalization tree
+     * @return DGH tree
      * @throws java.io.FileNotFoundException
      */
     public DGHTree createDGHTreeForDate(ArrayList<String> dates) throws FileNotFoundException{
@@ -309,6 +325,13 @@ public class DGHTree
        return tree;  
     }
     
+    /**
+     * Dates must be in format (YYYY-MM-DD)
+     * Creates a DGH Tree for list of dates
+     * E.g from YYYY-MM-DD -> YYYY-MM -> YYYY - > 10 year range -> ****
+     * @param dates - dates to be generalized
+     * @return DGH tree
+     */
     public DGHTree createRangesDatesDGHTrees(ArrayList<String> dates){
         //form year ranges so i only first 4
         ArrayList<Integer> years = new ArrayList<>();
@@ -401,32 +424,36 @@ public class DGHTree
     return tree;    
     }
     
-    
+    /**
+     * Recursively sets a node's parent until it gets to ****
+     * E.g For node 1987, parent is 198* whose parent is 19**
+     * Node is numeric data
+     * @param node
+     * @param i = number of digits in data
+     */
     public void setAllParents(DGHNode node, int i){
-        //for(int i = 0; i < node.getData().length(); i++){
         if(i >= 0){
             node.setParent(modifyString(node.getData(), i));
             i--;
             node.parent.children.add(node);
             setAllParents(node.parent, i);
         }
-        //}
     }
     
+    /**
+     * Recursively sets a node's parent until it gets to ****
+     * Node is date
+     * @param node
+     * @param i = number of digits in data
+     */
     public void setAllParentsForDates(DGHNode node, int i){
-        //for(int i = 0; i < node.getData().length(); i++){
         if(i > 0){
             node.setParent(modifyToDate(node.getData()));
             i--;
             node.parent.children.add(node);
             setAllParentsForDates(node.parent, i);
         }
-        //}
     }
-    
-    //public void getRoot()
-    
-   
     
     public String modifyString(String string, int level){
         String result = string.substring(0, level);
@@ -456,38 +483,45 @@ public class DGHTree
         tree.printTree(tree.root, 0);
         System.out.println();
         System.out.println(tree.getGeneralization("cough"));*/
-        DGHTree tree = new DGHTree();
-        DGHTree tree2;
+        DGHTree tree2 = new DGHTree();
+        
+        
         //new ArrayList<Integer>(Arrays.asList(1,2,3,5,8,13,21));
         ArrayList<String> values = new ArrayList<>(Arrays.asList("1995-10-30", "1983-11-25", "1995-12-03","2000-07-16", "1986-11-25","1997-02-01", "2000-07-09", "2010-09-07","2011-05-05"));
-        tree2 = tree.createRangesDatesDGHTrees(values);
+        tree2 = tree2.createRangesDatesDGHTrees(values);
+        DGHTree tree3 = new DGHTree("/Users/adenugad/NetBeansProjects/kAnonAlgorithms/src/datafly/" + "dghSex");
+        DGHTree tree4 = new DGHTree("/Users/adenugad/NetBeansProjects/kAnonAlgorithms/src/datafly/" + "dghRace");
+        
         tree2.setHeight();
-        System.out.println("Tree Height1: " + tree2.getHeight());
-        tree2.setDGHNodeLevels(tree2.root, tree2.getHeight()-1);
+        tree3.setHeight();
+        tree4.setHeight();
+        
         System.out.println("Tree Height2: " + tree2.getHeight());
+        System.out.println("Tree Height3: " + tree3.getHeight());
+        System.out.println("Tree Height4: " + tree4.getHeight());
+        
+        tree2.setDGHNodeLevels(tree2.root, tree2.getHeight()-1);
+        tree3.setDGHNodeLevels(tree3.root, tree3.getHeight()-1);
+        tree4.setDGHNodeLevels(tree4.root, tree4.getHeight()-1);
+        
         tree2.printTree(tree2.root, 0);
-        /*System.out.println();
-        System.out.println("1*** generalization: " + tree2.getGeneralization("1***"));
-        System.out.println("1997 generalization: " + tree2.getGeneralization("1997"));
-        System.out.println("1983 generalization: " + tree2.getGeneralization("1983"));
-        System.out.println("1986 generalization: " + tree2.getGeneralization("1986"));
-        System.out.println("2007 generalization: " + tree2.getGeneralization("2007"));
-        System.out.println("2002 generalization: " + tree2.getGeneralization("2002"));
-        System.out.println("2010 generalization: " + tree2.getGeneralization("2010"));
-        System.out.println("2*** generalization: " + tree2.getGeneralization("2***"));*/
-        //print 19** children
         System.out.println();
+        tree3.printTree(tree3.root, 0);
+        System.out.println();
+        tree4.printTree(tree4.root, 0);
+        
+        /*System.out.println();
         System.out.println("2000-07-09: " + tree2.getGeneralization("2000-07-09"));
         System.out.println("2000-07-16: " + tree2.getGeneralization("2000-07-16"));
         System.out.println("2000-07: " + tree2.getGeneralization("2000-07"));
-        System.out.println("2000: " + tree2.getGeneralization("2000"));
+        System.out.println("2000: " + tree2.getGeneralization("2000"));*/
 
 
         //System.out.println();
-        tree2.search(tree2.root, "2000");
+        /*tree2.search(tree2.root, "2000");
         for(int i = 0; i < tree2.current.getChildCount(); i++){
             System.out.println("child " + i + " -" + tree2.current.children.get(i).getData());
-        }
-        System.out.println("Tree Height: " + tree2.getHeight());
+        }*/
+        //System.out.println("Tree Height: " + tree2.getHeight());
     }
 }

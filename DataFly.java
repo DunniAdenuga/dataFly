@@ -15,7 +15,7 @@ import java.util.Properties;
  * @author Dunni Adenuga
  */
 public class DataFly {
-    Connection conn;
+    private Connection conn;
     
     public static void main(String[] args) throws FileNotFoundException, ClassNotFoundException, SQLException {
         DataFly dataFly = new DataFly();
@@ -28,16 +28,16 @@ public class DataFly {
         //props.setProperty("ssl", "true");
         //dataFly.conn = DriverManager.getConnection(url, props); //uncomment when connecting to DB
         
-        
-          //dataFly.setup(); 
         PrivateTable myPrivateTable = dataFly.startGeneralization(dataFly.setup());
         //System.out.println("Is the generated table 2-anonymous ? " 
                     //+ dataFly.checkTable(2, myPrivateTable));//this is just to check
-        //kAnon shouldn't be hardcoded
         myPrivateTable.printFormat();
         
     }
-    
+    /**
+     * Set conn = con
+     * @param con 
+     */
     public void setConn(Connection con){
         conn = con;
     }
@@ -59,25 +59,33 @@ public class DataFly {
         return true;
     }
     
+    /**
+     * Create a table and choose quasi identifiers
+     * @return
+     * @throws FileNotFoundException
+     * @throws SQLException 
+     */
     public PrivateTable setup() throws FileNotFoundException, SQLException{
         /*Setting up*/
-        
-        
-        //PrivateTable generalizedTable;
-        
         PrivateTable myPrivateTable = new PrivateTable();
         //basically set attribute names
         myPrivateTable.setRowHeadings("Race,DOB,ID,Sex,Allele 1,Allele 2");/*instead of hard-code, in future should be
         user input*/
-        myPrivateTable.setQuasi("Race,DOB,ID");// DO THIS LATER!!!
+        myPrivateTable.setQuasi("Race,DOB,ID,Sex");// DO THIS LATER!!!
         myPrivateTable.setTableValues("/Users/adenugad/NetBeansProjects/kAnonAlgorithms/src/datafly/tableInputs.txt");
-        //myPrivateTable.setTableValues(conn);uncomment this when connecting to DB
+        //myPrivateTable.setTableValues(conn);//uncomment this when connecting to DB
         myPrivateTable = rectifyTableColumn(myPrivateTable, 2);//rectify ID in this case
         //myPrivateTable.printFormat();
         
         return myPrivateTable;
     }
     
+    /**
+     * Generalize a table
+     * @param myPrivateTable
+     * @return
+     * @throws FileNotFoundException 
+     */
     public PrivateTable startGeneralization(PrivateTable myPrivateTable) throws FileNotFoundException{
         System.out.print("Please Enter k: ");
         Scanner user = new Scanner(System.in);
@@ -115,8 +123,9 @@ public class DataFly {
          myPrivateTable = suppress(myPrivateTable, kAnon);
          return myPrivateTable;
     }
+    
     /**
-     * 
+     * Attribute values combination and the number of times they occur
      * @param table
      * @return row of quasi identifiers and the number of times they occur
      * All rows are stored in a hashmap
@@ -146,7 +155,12 @@ public class DataFly {
         }
         return freqSet;
     }
-
+    
+    /**
+     * Get the column number of the quasi identifiers
+     * @param table
+     * @return 
+     */
     public ArrayList<Integer> getQuasiColNum(PrivateTable table) {
         //I have to get column number to get where the quasi identifiers exist
         //on the table //compare quasi iden to top row header
@@ -160,8 +174,10 @@ public class DataFly {
         }
         return quasiColNum;
     }
-    /*
+    
+    
     /**
+     * Old method, assumes values are numeric
      * @param oldTable - modify table with specified generalization
      * @param columnToGeneralize
      * @param generalizationLevel - because I'm assuming numeric data, this determines 
@@ -204,6 +220,13 @@ public class DataFly {
         return newTable;
     }
     
+    /**
+     * Makes sure values in a specified column of table have same number of
+     * characters
+     * @param oldTable
+     * @param columnToRectify
+     * @return 
+     */
     public PrivateTable rectifyTableColumn(PrivateTable oldTable, int columnToRectify){
         PrivateTable newTable = oldTable.copy();
         int max = newTable.tableRows.get(0).data.get(columnToRectify).length();
@@ -224,27 +247,26 @@ public class DataFly {
      return newTable;   
     
     }
+    
+    /**
+     * Use DGH to generalize a table
+     * @param oldTable
+     * @param dghTree
+     * @param columnToGeneralize
+     * @return
+     * @throws FileNotFoundException 
+     */
     public PrivateTable generateTableWithDGHTable(PrivateTable oldTable, DGHTree dghTree, int columnToGeneralize) throws FileNotFoundException{
         PrivateTable newTable = oldTable.copy();
-       /* ArrayList<String> allValuesInColumn = new ArrayList<>();
         for(int i = 0; i < oldTable.tableRows.size();i++){
-            allValuesInColumn.add(oldTable.tableRows.get(i).data.get(columnToGeneralize));
-        }*/
-        //DGHTree dghTree = new DGHTree();
-        //dghTree = dghTree.createDGHTree(allValuesInColumn);
-        for(int i = 0; i < oldTable.tableRows.size();i++){
-            //int x = 0;
-            //while(x < generalizationLevel){
-                //x++;
-                //System.out.println("null: " + newTable.tableRows.get(i).data.get(columnToGeneralize));
                 String newElement = dghTree.getGeneralization(newTable.tableRows.get(i).data.get(columnToGeneralize));
                 newTable.tableRows.get(i).data.set(columnToGeneralize, newElement);
-            //}
         }
-        return newTable;
-        
+        return newTable;   
     }
+    
     /**
+     * Create DGH Trees for a table's quasi identifiers
      * This is entirely based on the quasi Identifiers
      * This method is assuming they are in the order Race,DOB , ID,Sex in the 
      * returned table from the database so, 0,1,2,3
@@ -256,9 +278,6 @@ public class DataFly {
     public ArrayList<DGHTree> createDGHTrees(PrivateTable table) throws FileNotFoundException{
         ArrayList<DGHTree> dghTrees = new ArrayList<>();
         String header = "/Users/adenugad/NetBeansProjects/kAnonAlgorithms/src/datafly/";
-        //create DGH for sex
-        /*DGHTree dghTreeSex = new DGHTree(header + "dghSex");
-        dghTrees.add(dghTreeSex);*/
         
         //create DGH for Race
         DGHTree dghTreeRace = new DGHTree(header + "dghRace");
@@ -294,9 +313,22 @@ public class DataFly {
         dghTreeID.setDGHNodeLevels(dghTreeID.root, dghTreeID.getHeight()-1);
         dghTrees.add(dghTreeID);
         
+        //create DGH for Sex
+        DGHTree dghTreeSex = new DGHTree(header + "dghSex");
+        dghTreeSex.setWeight(0);
+        dghTreeSex.setLabel("Sex");
+        dghTreeSex.setHeight();
+        dghTreeSex.setDGHNodeLevels(dghTreeSex.root, dghTreeSex.getHeight()-1);
+        dghTrees.add(dghTreeSex);
         return dghTrees;
     }
     
+    /**
+     * Find Attribute with most distinct values
+     * @param table
+     * @param freqList
+     * @return 
+     */
     public int getAttributeWithMostDistinctValues(PrivateTable table, HashMap<ArrayList, Integer> freqList){
         String attribute /*attribute2*/ ;
         int attributeColumn = 0;
@@ -325,23 +357,18 @@ public class DataFly {
                 attributeColumn = i;
             }   
         }
-        /*for(int i = 0; i < quasiIden.size(); i++){      
-            if((quasiIden.get(i).size() > secondMax) && (i != attributeColumn)){
-                secondMax = quasiIden.get(i).size();
-                attributeColumn2 = i;
-            }   
-        }*/
-        
         System.out.println("attributeColumn - " + attributeColumn);
         attribute = quasiId.data.get(attributeColumn);
-       /* System.out.println("attributeColumn2 - " + attributeColumn2);
-        attribute2 = quasiId.data.get(attributeColumn2);*/
         System.out.println(attribute);
-        //System.out.println(attribute2);
-        //int[] intA = {table.topRow.data.indexOf(attribute),table.topRow.data.indexOf(attribute2)};
-        return table.topRow.data.indexOf(attribute);
-         
+        return table.topRow.data.indexOf(attribute);         
     }
+    
+    /**
+     * Checks if sequence of quasi Identifiers in a freqSet >= kAnon 
+     * @param freqSet
+     * @param kAnon
+     * @return 
+     */
     public boolean seqOccursLessThanKTimes(HashMap<ArrayList, Integer> freqSet, int kAnon){
         Integer[] freqValues = new Integer[freqSet.size()]; 
         freqValues = freqSet.values().toArray(freqValues);
@@ -355,36 +382,37 @@ public class DataFly {
                //System.out.println("noOfTuplesWithDistinctSequences: " + noOfTuplesWithDistinctSequences);
            }
            if(noOfTuplesWithDistinctSequences >= kAnon)
-               return true;
-            
+               return true;    
         }
         return false;
     }
     
-    //need method to suppress values
+    /**
+     * Suppresses outliers
+     * @param table
+     * @param kAnon
+     * @return 
+     */
     public PrivateTable suppress(PrivateTable table, int kAnon){
         /* if max level of generalization is reached, then you suppress ?
         Why do this when I have a while that doesn't let up until generalization is reached, how 
         do I combine them
         */
-        
         ArrayList<ArrayList> sequencesToSuppress = new ArrayList<>();
         ArrayList <Integer> quasiIdenCol = getQuasiColNum(table);
         PrivateTable newTable = table.copy();
         HashMap<ArrayList, Integer> freqSet = getFreqSet(newTable);
         ArrayList[] setOfKeys = new ArrayList[freqSet.size()];
         setOfKeys = freqSet.keySet().toArray(setOfKeys);
-        for(int i = 0; i < setOfKeys.length; i++){
-            if(freqSet.get(setOfKeys[i]) < kAnon){
-                sequencesToSuppress.add(setOfKeys[i]);
+            for(int i = 0; i < setOfKeys.length; i++){
+                if(freqSet.get(setOfKeys[i]) < kAnon){
+                    sequencesToSuppress.add(setOfKeys[i]);
+                }
             }
-        }
-
             //assuming the number of rows to be suppressed be less than kAnon 
             for(int j = 0; j < sequencesToSuppress.size(); j++){
 
                 //System.out.println("sequencesToSuppress" + sequencesToSuppress);
-                
                     int k = 0;
                     
                     while(k < newTable.tableRows.size()){
