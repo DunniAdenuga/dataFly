@@ -332,16 +332,16 @@ public class DGHTree
                 //minValueColumn = i;
             }
         }
-        int noOfRanges = (max - min)/5;
-        if(((max - min)%5) != 0){
+        int noOfRanges = (max - min)/10;
+        if(((max - min)%10) != 0){
             noOfRanges ++;
         }
         
         for(int i = 0; i < noOfRanges; i++){
-            String range = String.valueOf(min) + "-" + String.valueOf(min+4);
+            String range = String.valueOf(min) + "-" + String.valueOf(min+9);
             yearRanges.add(range);
             //System.out.println("noOfRange " + i + " : "+ range);
-            min = min + 5;
+            min = min + 10;
         }
         //add ranges to DGHTree, we starting from the root
         DGHTree tree = new DGHTree(new DGHNode("****"));

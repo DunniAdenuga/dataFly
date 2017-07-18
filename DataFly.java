@@ -26,7 +26,7 @@ public class DataFly {
         props.setProperty("user", "*****");
         props.setProperty("password", "*****");
         //props.setProperty("ssl", "true");
-        //dataFly.conn = DriverManager.getConnection(url, props); uncomment when connecting to DB
+        //dataFly.conn = DriverManager.getConnection(url, props); //uncomment when connecting to DB
         
         
           //dataFly.setup(); 
@@ -71,7 +71,7 @@ public class DataFly {
         user input*/
         myPrivateTable.setQuasi("Race,DOB,ID");// DO THIS LATER!!!
         myPrivateTable.setTableValues("/Users/adenugad/NetBeansProjects/kAnonAlgorithms/src/datafly/tableInputs.txt");
-        //myPrivateTable.setTableValues(conn);
+        //myPrivateTable.setTableValues(conn);uncomment this when connecting to DB
         myPrivateTable = rectifyTableColumn(myPrivateTable, 2);//rectify ID in this case
         //myPrivateTable.printFormat();
         
